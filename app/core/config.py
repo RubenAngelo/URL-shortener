@@ -2,6 +2,10 @@ from pydantic_settings import BaseSettings
 import os
 
 class Settings(BaseSettings):
+    """
+    Configurações principais da aplicação, lidas de variáveis de ambiente ou arquivo .env.
+    """
+
     # Database
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
@@ -11,7 +15,7 @@ class Settings(BaseSettings):
 
     # App
     APP_NAME: str = "URL Shortener"
-    DEBUG: bool = False
+    APP_DEBUG: bool = True
 
     class Config:
         env_file = os.getenv("ENV_FILE", ".env")

@@ -1,19 +1,22 @@
 from fastapi import APIRouter,Request
-from app.CRUD.url import insert_url
+from app.CRUD.url import insert_url_mapping
 from app.utils.utils import md5_url_encode
-from app.models.url_shortener import UrlRequests, UrlResponses
+from app.models.url_shortener_models import UrlRequest, UrlResponse
 
 router = APIRouter()
 
-@router.post("/url/shortener", response_model=UrlResponses)
-def create_short_url(request_body: UrlRequests, request: Request):
-    url = str(request_body.url)
+@router.post("/shorten", response_model=UrlResponse)
+def create_short_url(request: UrlRequest, fastapi_request: Request):
+    """
+    Cria uma URL encurtada a partir de uma URL original.
+    Retorna a URL encurtada.
+    """
 
-    md5_code = md5_url_encode(url)
-    insert_url(url, md5_code)
+    url = str(request.url)
 
-    short_url = str(request.url_for("redirect_short_url", md5_code=md5_code))
+    url_md5 = md5_url_encode(url)
+    insert_url_mapping(url, url_md5)
 
-    return {
-        "short_url": short_url
-    }
+    short_url = str(fastapi_request.url_for("redirect_short_url", url_md5=url_md5))
+
+    return UrlResponse(short_url=short_url)
