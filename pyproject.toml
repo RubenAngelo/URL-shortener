@@ -1,0 +1,22 @@
+[project]
+name = "project-url-shortener"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "rubenadriel",email = "ruben.a.angelo@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "psycopg2-binary (>=2.9.10,<3.0.0)",
+    "fastapi (>=0.116.1,<0.117.0)",
+    "pydantic-settings (>=2.10.1,<3.0.0)",
+    "uvicorn (>=0.35.0,<0.36.0)"
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
