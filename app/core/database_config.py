@@ -1,7 +1,19 @@
+"""
+Módulo de configuração de conexão com o banco de dados PostgreSQL.
+
+Este módulo fornece funções para criar e gerenciar conexões com o banco de dados,
+utilizando o pacote psycopg2. Inclui um gerenciador de contexto para garantir
+commit, rollback e fechamento adequado da conexão.
+"""
+
+from contextlib import contextmanager
+from typing import Generator
+
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from contextlib import contextmanager
-from app.core.config import settings
+from fastapi import HTTPException
+
+from app.core.env_config import settings
 
 def get_postgres_connection() -> psycopg2.extensions.connection:
     """
@@ -18,7 +30,7 @@ def get_postgres_connection() -> psycopg2.extensions.connection:
     )
 
 @contextmanager
-def get_db():
+def get_db_connection() -> Generator[psycopg2.extensions.connection, None, None]:
     """
     Context manager para conexão com o banco de dados.
     Garante commit, rollback e fechamento da conexão.
@@ -30,9 +42,10 @@ def get_db():
         yield conn
         conn.commit()
 
-    except Exception:
+    except psycopg2.DatabaseError as e:
         conn.rollback()
-        raise
+
+        raise HTTPException(status_code=500, detail="Erro com banco de dados:") from e
 
     finally:
         conn.close()

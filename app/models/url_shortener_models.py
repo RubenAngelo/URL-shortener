@@ -1,3 +1,9 @@
+"""
+Este módulo define os modelos de dados utilizados para o serviço de encurtamento de URLs.
+
+Utiliza Pydantic para validação dos dados.
+"""
+
 from pydantic import BaseModel, HttpUrl
 
 class UrlRequest(BaseModel):
