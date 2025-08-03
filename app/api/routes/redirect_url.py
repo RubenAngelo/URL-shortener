@@ -2,8 +2,7 @@
 Módulo de rotas para redirecionamento de URLs curtas.
 
 Este módulo define a rota responsável por redirecionar o usuário para a URL original
-a partir de um hash MD5 fornecido na URL. Caso o hash não corresponda a nenhuma URL
-cadastrada, retorna um erro 404.
+a partir de um hash MD5 fornecido na URL.
 """
 
 from fastapi import APIRouter
@@ -20,7 +19,6 @@ router = APIRouter()
 def redirect_short_url(url_md5_hash: str) -> RedirectResponse:
     """
     Redireciona para a URL original a partir da URL curta.
-    Se não existir URL para o hash MD5, retorna um erro 404.
     """
 
     # Busca a URL original a partir do hash MD5

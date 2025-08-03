@@ -2,7 +2,7 @@
 Módulo de operações CRUD para o encurtador de URLs.
 
 Este módulo fornece funções para buscar e inserir mapeamentos de URLs e seus respectivos hashes MD5
-na tabela `url_lookup` do banco de dados.
+no banco de dados.
 """
 
 from typing import Optional
@@ -14,7 +14,13 @@ from app.core.database_config import get_db_connection
 
 logger = setup_logging("url_crud")
 
-def fetch_md5_hash_by_url(url):
+def fetch_md5_hash_by_url(url: str) -> Optional[str]:
+    """
+    Verifica se uma URL já existe no banco de dados e retorna o hash MD5 associado.
+    """
+
+    logger.info("Verificando se a URL ja existe no banco...")
+
     with get_db_connection() as conn:
         cursor = conn.cursor()
 
@@ -46,7 +52,6 @@ def fetch_url_by_md5_hash(url_md5_hash: str) -> Optional[str]:
     """
     Busca a URL original a partir do hash MD5.
     Retorna a URL se encontrada.
-    Se nenhuma URL for encontrada, retorna um erro 404.
     """
 
     logger.info("Buscando URL pelo hash MD5...")
@@ -77,11 +82,13 @@ def fetch_url_by_md5_hash(url_md5_hash: str) -> Optional[str]:
 
         return result["url"]
 
-def create_url_mapping(url: str, url_md5_hash: str) -> bool:
+def create_url_mapping(url: str, url_md5_hash: str) -> None:
     """
     Insere uma nova URL e seu hash MD5 na tabela url_lookup.
     Retorna True se inserção for bem-sucedida, False caso contrário.
     """
+
+    logger.info("Inserindo URL no banco...")
 
     with get_db_connection() as conn:
         cursor = conn.cursor()
@@ -102,5 +109,3 @@ def create_url_mapping(url: str, url_md5_hash: str) -> bool:
         )
 
     logger.info("URL inserida com sucesso!")
-
-    return True
