@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 
 from app.core.logging_config import setup_logging
 
-from utils.utils import current_timestamp
+from app.utils.utils import current_timestamp
 
 logger = setup_logging("exception_handlers")
 
@@ -27,7 +27,6 @@ async def http_exception_handler(request: Request, exception: HTTPException):
         status_code=exception.status_code,
         content={
             "error": exception.detail,
-            'description': exception,
             'status_code': exception.status_code,
             'timestamp': current_timestamp()
         },
@@ -46,7 +45,7 @@ async def generic_exception_handler(request: Request, exception: HTTPException):
         status_code=500,
         content={
             "error": "Internal Server Error",
-            'description': exception,
+            'description': str(exception),
             'status_code': 500,
             'timestamp': current_timestamp()
         },

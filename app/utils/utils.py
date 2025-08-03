@@ -44,4 +44,4 @@ def current_timestamp() -> float:
     Retorna o timestamp atual.
     """
 
-    return datetime.now(datetime.timezone.utc).timestamp()
+    return datetime.utcnow().timestamp()
