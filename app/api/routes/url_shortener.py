@@ -32,28 +32,20 @@ def create_short_url(request: UrlRequest, fastapi_request: Request) -> UrlRespon
     logger.info("Verificando se é uma URL já encurtada...")
 
     # Verifica se a URL já é uma URL encurtada
-    if base_url in url:
-        logger.info("A URL ja foi encurtada.")
-        logger.info("Devolvendo URL encurtada...")
+    if url.startswith(base_url):
+        logger.info("A URL ja foi encurtada. Devolvendo URL encurtada...")
 
         return UrlResponse(short_url=url)
 
     # Verifica se a URL ja existe no banco
     url_md5_hash = fetch_md5_hash_by_url(url)
 
-    if url_md5_hash:
-        # Gera a URL encurtada
-        short_url = build_short_url(fastapi_request, "redirect_short_url", url_md5_hash)
+    if not url_md5_hash:
+        # Gera o hash MD5 da URL
+        url_md5_hash = md5_url_encode(url)
 
-        logger.info("Devolvendo URL encurtada...")
-
-        return UrlResponse(short_url=short_url)
-
-    # Gera o hash MD5 da URL
-    url_md5_hash = md5_url_encode(url)
-
-    # Insere a URL e o hash MD5 na tabela
-    create_url_mapping(url, url_md5_hash)
+        # Insere a URL e o hash MD5 na tabela
+        create_url_mapping(url, url_md5_hash)
 
     # Gera a URL encurtada
     short_url = build_short_url(fastapi_request, "redirect_short_url", url_md5_hash)

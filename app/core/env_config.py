@@ -24,10 +24,13 @@ class Settings(BaseSettings):
     DB_USER: str = "admin"
     DB_PASSWORD: str = "senhaParaADM321*"
 
-    #Faz validação da porta do banco de dados
-    @field_validator("DB_PORT")
     @classmethod
-    def port_must_be_valid(cls, v):
+    @field_validator("DB_PORT")
+    def port_must_be_valid(cls, v: int) -> int:
+        """
+        Faz validação da porta do banco de dados.
+        """
+
         if not (1024 <= v <= 65535):
             raise ValueError("DB_PORT deve estar entre 1024 e 65535!")
 

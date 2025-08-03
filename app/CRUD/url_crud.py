@@ -41,7 +41,6 @@ def fetch_md5_hash_by_url(url: str) -> Optional[str]:
         result = cursor.fetchone()
 
         if not result:
-            logger.info("A URL não existe no banco.")
             return None
 
         logger.info("A URL ja existe no banco.")
@@ -85,7 +84,6 @@ def fetch_url_by_md5_hash(url_md5_hash: str) -> Optional[str]:
 def create_url_mapping(url: str, url_md5_hash: str) -> None:
     """
     Insere uma nova URL e seu hash MD5 na tabela url_lookup.
-    Retorna True se inserção for bem-sucedida, False caso contrário.
     """
 
     logger.info("Inserindo URL no banco...")

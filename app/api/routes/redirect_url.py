@@ -11,7 +11,7 @@ from fastapi.responses import RedirectResponse
 from app.core.logging_config import setup_logging
 from app.CRUD.url_crud import fetch_url_by_md5_hash
 
-logger = setup_logging("redirect")
+logger = setup_logging("redirect_url")
 
 router = APIRouter()
 

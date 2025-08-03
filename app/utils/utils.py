@@ -1,7 +1,7 @@
 """
 Módulo utilitário para geração de hash MD5 de URLs.
 
-Este módulo fornece funções auxiliares.
+Este módulo fornece funções auxiliares para o gerenciamento de URLs e hashes MD5.
 """
 
 import hashlib
@@ -39,9 +39,9 @@ def build_short_url(fastapi_request: Request, endpoint_func_name: str, url_md5_h
 
     return short_url
 
-def current_timestamp() -> float:
+def current_timestamp() -> str:
     """
     Retorna o timestamp atual.
     """
 
-    return datetime.utcnow().timestamp()
+    return datetime.utcnow().isoformat() + "Z"

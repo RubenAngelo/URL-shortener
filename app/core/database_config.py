@@ -45,7 +45,7 @@ def get_db_connection() -> Generator[psycopg2.extensions.connection, None, None]
     except psycopg2.DatabaseError as e:
         conn.rollback()
 
-        raise HTTPException(status_code=500, detail="Erro com banco de dados:") from e
+        raise HTTPException(status_code=500, detail="Erro no banco de dados") from e
 
     finally:
         conn.close()

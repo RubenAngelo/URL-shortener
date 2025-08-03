@@ -10,17 +10,18 @@ import logging
 def setup_logging(module_name: str) -> logging.Logger:
     """
     Configura o sistema de logging para o módulo especificado.
-    Este método inicializa a configuração básica de logging, definindo o nível de log como INFO,
-    o formato da mensagem e o handler para saída no console. Retorna um logger associado ao nome
-    do módulo fornecido.
     """
 
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(levelname)s:     %(name)s module: %(message)s",
-        handlers=[
-            logging.StreamHandler(),
-        ]
-    )
+    logger = logging.getLogger(module_name)
 
-    return logging.getLogger(module_name)
+    if not logger.hasHandlers():
+        handler = logging.StreamHandler()
+
+        formatter = logging.Formatter("%(levelname)s:     %(name)s: %(message)s")
+        handler.setFormatter(formatter)
+
+        logger.addHandler(handler)
+
+        logger.setLevel(logging.INFO)
+
+    return logger
