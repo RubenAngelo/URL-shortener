@@ -12,17 +12,19 @@ import os
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
+
 class Settings(BaseSettings):
     """
     Configurações principais da aplicação, lidas de variáveis de ambiente ou arquivo .env.
     """
 
     # Database
-    DB_HOST: str = "localhost"
-    DB_PORT: int = 5432
-    DB_NAME: str = "testdb"
-    DB_USER: str = "admin"
-    DB_PASSWORD: str = "senhaParaADM321*"
+    DB_DIALECT: str
+    DB_HOST: str
+    DB_PORT: int
+    DB_NAME: str
+    DB_USER: str
+    DB_PASSWORD: str
 
     @classmethod
     @field_validator("DB_PORT")
@@ -40,7 +42,12 @@ class Settings(BaseSettings):
     APP_NAME: str = "URL Shortener"
     APP_DEBUG: bool = True
 
+    AUTH_SECRET_KEY: str
+    AUTH_ALGORITHM: str = "HS256"
+    AUTH_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
     class Config:
         env_file = os.getenv("ENV_FILE", ".env")
+
 
 settings = Settings()

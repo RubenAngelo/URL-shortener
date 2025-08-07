@@ -12,9 +12,11 @@ from fastapi import APIRouter
 
 from app.api.routes.url_shortener import router as url_shortener_router
 from app.api.routes.redirect_url import router as redirect_router
+from app.api.routes.auth import router as auth_router
 
-#Novas rotas devem ser adicionadas aqui
+# Novas rotas devem ser adicionadas aqui
 api_registered_routers: List[Tuple[APIRouter, str]] = [
     (url_shortener_router, "/api"),
-    (redirect_router, "/r"),
+    (redirect_router, "/api"),
+    (auth_router, "/api"),
 ]

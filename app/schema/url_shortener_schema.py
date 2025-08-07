@@ -6,12 +6,14 @@ Utiliza Pydantic para validação dos dados.
 
 from pydantic import BaseModel, HttpUrl
 
+
 class UrlRequest(BaseModel):
     """
     Modelo para requisição de encurtamento de URL.
     """
 
     url: HttpUrl
+
 
 class UrlResponse(BaseModel):
     """

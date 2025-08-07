@@ -1,109 +1,59 @@
-"""
-Módulo de operações CRUD para o encurtador de URLs.
-
-Este módulo fornece funções para buscar e inserir mapeamentos de URLs e seus respectivos hashes MD5
-no banco de dados.
-"""
-
 from typing import Optional
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
 
 from app.core.logging_config import setup_logging
-from app.core.database_config import get_db_connection
+from app.models.url_db_model import UrlLookup
 
 logger = setup_logging("url_crud")
 
-def fetch_md5_hash_by_url(url: str) -> Optional[str]:
+
+def get_url_hash_by_url(db: Session, url: str) -> Optional[str]:
     """
-    Verifica se uma URL já existe no banco de dados e retorna o hash MD5 associado.
+    Verifica se uma URL já existe no banco de dados e retorna o hash associado.
     """
 
-    logger.info("Verificando se a URL ja existe no banco...")
+    logger.info("Verificando se a URL já existe no banco...")
 
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
+    url_obj = db.query(UrlLookup).filter_by(url=url).first()
 
-        cursor.execute("""--sql
-            SELECT
-                url_md5_hash
+    if not url_obj:
+        logger.info("A URL não existe no banco.")
+        return None
 
-            FROM
-                url_lookup
+    logger.info("A URL já existe no banco.")
+    return url_obj.url_hash
 
-            WHERE
-                url = %s
 
-            """,
-            (url,)
-        )
-
-        result = cursor.fetchone()
-
-        if not result:
-            return None
-
-        logger.info("A URL ja existe no banco.")
-
-        return result["url_md5_hash"]
-
-def fetch_url_by_md5_hash(url_md5_hash: str) -> Optional[str]:
+def get_url_by_url_hash(db: Session, url_hash: str) -> Optional[str]:
     """
-    Busca a URL original a partir do hash MD5.
+    Busca a URL original a partir do hash.
     Retorna a URL se encontrada.
     """
+    logger.info("Buscando URL pelo hash ...")
 
-    logger.info("Buscando URL pelo hash MD5...")
+    url_obj = db.query(UrlLookup).get(url_hash)
 
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-
-        cursor.execute("""--sql
-            SELECT
-                url
-
-            FROM
-                url_lookup
-
-            WHERE
-                url_md5_hash = %s
-
-            """,
-            (url_md5_hash,)
+    if not url_obj:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="URL não encontrada."
         )
 
-        result = cursor.fetchone()
+    logger.info("URL encontrada com sucesso!")
+    return url_obj.url
 
-        if not result:
-            raise HTTPException(status_code=404, detail="URL não encontrada.")
 
-        logger.info("URL encontrada com sucesso!")
-
-        return result["url"]
-
-def create_url_mapping(url: str, url_md5_hash: str) -> None:
+def create_url_mapping(db: Session, url: str, url_hash: str) -> None:
     """
-    Insere uma nova URL e seu hash MD5 na tabela url_lookup.
+    Insere uma nova URL e seu hash na tabela url_lookup.
     """
-
     logger.info("Inserindo URL no banco...")
 
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
+    new_url = UrlLookup(url_hash=url_hash, url=url)
 
-        cursor.execute("""--sql
-            INSERT INTO url_lookup (
-                url_md5_hash, 
-                url
-            ) 
-
-            VALUES (
-                %s, 
-                %s
-            )
-
-            """,
-            (url_md5_hash, url)
-        )
+    db.add(new_url)
+    db.commit()
+    db.refresh(new_url)
 
     logger.info("URL inserida com sucesso!")

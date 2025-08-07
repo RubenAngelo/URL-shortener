@@ -1,51 +1,32 @@
-"""
-Módulo de configuração de conexão com o banco de dados PostgreSQL.
-
-Este módulo fornece funções para criar e gerenciar conexões com o banco de dados,
-utilizando o pacote psycopg2. Inclui um gerenciador de contexto para garantir
-commit, rollback e fechamento adequado da conexão.
-"""
-
-from contextlib import contextmanager
 from typing import Generator
 
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from fastapi import HTTPException
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 from app.core.env_config import settings
 
-def get_postgres_connection() -> psycopg2.extensions.connection:
-    """
-    Cria e retorna uma conexão com o banco de dados PostgreSQL.
-    """
+SQLALCHEMY_DATABASE_URL = (
+    f"{settings.DB_DIALECT}://{settings.DB_USER}:{settings.DB_PASSWORD}@"
+    f"{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+)
 
-    return psycopg2.connect(
-        dbname=settings.DB_NAME,
-        user=settings.DB_USER,
-        password=settings.DB_PASSWORD,
-        host=settings.DB_HOST,
-        port=settings.DB_PORT,
-        cursor_factory=RealDictCursor
-    )
+engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=settings.APP_DEBUG)
 
-@contextmanager
-def get_db_connection() -> Generator[psycopg2.extensions.connection, None, None]:
+session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+base = declarative_base()
+
+
+def get_db() -> Generator:
     """
     Context manager para conexão com o banco de dados.
     Garante commit, rollback e fechamento da conexão.
     """
 
-    conn = get_postgres_connection()
+    db = session_local()
 
     try:
-        yield conn
-        conn.commit()
-
-    except psycopg2.DatabaseError as e:
-        conn.rollback()
-
-        raise HTTPException(status_code=500, detail="Erro no banco de dados") from e
+        yield db
 
     finally:
-        conn.close()
+        db.close()

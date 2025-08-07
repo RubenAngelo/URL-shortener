@@ -7,6 +7,7 @@ definindo o nível de log, o formato das mensagens e os handlers utilizados.
 
 import logging
 
+
 def setup_logging(module_name: str) -> logging.Logger:
     """
     Configura o sistema de logging para o módulo especificado.

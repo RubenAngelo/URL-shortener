@@ -2,23 +2,28 @@
 Módulo de rotas para encurtamento de URLs utilizando FastAPI.
 
 Este módulo define a rota responsável por receber uma URL original,
-gerar um hash MD5 para identificá-la de forma única, armazenar o mapeamento
+gerar um hash para identificá-la de forma única, armazenar o mapeamento
 no banco de dados e retornar uma URL encurtada para o usuário.
 """
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
+from app.core.database_config import get_db
 from app.core.logging_config import setup_logging
-from app.models.url_shortener_models import UrlRequest, UrlResponse
-from app.utils.utils import md5_url_encode, build_short_url
-from app.CRUD.url_crud import create_url_mapping, fetch_md5_hash_by_url
+from app.schema.url_shortener_schema import UrlRequest, UrlResponse
+from app.utils.utils import generate_url_hash, build_short_url
+from app.CRUD.url_crud import create_url_mapping, get_url_hash_by_url
 
 logger = setup_logging("url_shortener")
 
 router = APIRouter()
 
+
 @router.post("/shorten", response_model=UrlResponse)
-def create_short_url(request: UrlRequest, fastapi_request: Request) -> UrlResponse:
+def create_short_url(
+    request: UrlRequest, fastapi_request: Request, db: Session = Depends(get_db)
+) -> UrlResponse:
     """
     Cria uma URL encurtada a partir de uma URL original.
     Retorna a URL encurtada.
@@ -38,17 +43,30 @@ def create_short_url(request: UrlRequest, fastapi_request: Request) -> UrlRespon
         return UrlResponse(short_url=url)
 
     # Verifica se a URL ja existe no banco
-    url_md5_hash = fetch_md5_hash_by_url(url)
+    url_hash = get_url_hash_by_url(db=db, url=url)
 
-    if not url_md5_hash:
-        # Gera o hash MD5 da URL
-        url_md5_hash = md5_url_encode(url)
+    if not url_hash:
+        # Gera o hash da URL
+        url_hash = generate_url_hash(url=url)
 
-        # Insere a URL e o hash MD5 na tabela
-        create_url_mapping(url, url_md5_hash)
+    try:
+        # Insere a URL e o hash na tabela
+        create_url_mapping(db=db, url=url, url_hash=url_hash)
+
+    except Exception as e:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao registrar usuário: {e}",
+        ) from e
 
     # Gera a URL encurtada
-    short_url = build_short_url(fastapi_request, "redirect_short_url", url_md5_hash)
+    short_url = build_short_url(
+        fastapi_request=fastapi_request,
+        endpoint_func_name="redirect_short_url",
+        url_hash=url_hash,
+    )
 
     logger.info("Retornando URL encurtada...")
 

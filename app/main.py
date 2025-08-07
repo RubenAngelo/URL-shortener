@@ -13,21 +13,22 @@ utilizando rotas registradas dinamicamente.
 from fastapi import FastAPI, HTTPException
 
 from app.core.env_config import settings
-from app.core.exception_handlers import http_exception_handler, generic_exception_handler
-from app.schema.create_tables import create_table_url_lookup
+from app.core.exception_handlers import (
+    http_exception_handler,
+    generic_exception_handler,
+)
+from app.database.init_db import create_all_tables
 from app.api.routers import api_registered_routers
 
 # Cria a aplicação FastAPI
-app = FastAPI(
-    title=settings.APP_NAME,
-    debug=settings.APP_DEBUG
-)
+app = FastAPI(title=settings.APP_NAME, debug=settings.APP_DEBUG)
 
 # Configura o tratamento de exceções das requisições
 app.add_exception_handler(HTTPException, http_exception_handler)
 
 # Configura o tratamento de exceções geral
 app.add_exception_handler(Exception, generic_exception_handler)
+
 
 # Ao iniciar a aplicação, cria a tabela do banco de dados
 @app.on_event("startup")
@@ -38,7 +39,8 @@ def on_startup() -> None:
     """
 
     # Cria a tabela do banco de dados
-    create_table_url_lookup()
+    create_all_tables()
+
 
 # Registra as rotas da API
 for router, prefix in api_registered_routers:
