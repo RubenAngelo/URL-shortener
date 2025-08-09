@@ -44,13 +44,13 @@ def get_url_by_url_hash(db: Session, url_hash: str) -> Optional[str]:
     return url_obj.url
 
 
-def create_url_mapping(db: Session, url: str, url_hash: str) -> None:
+def create_url_mapping(db: Session, url: str, url_hash: str, user_id: str) -> None:
     """
     Insere uma nova URL e seu hash na tabela url_lookup.
     """
     logger.info("Inserindo URL no banco...")
 
-    new_url = UrlLookup(url_hash=url_hash, url=url)
+    new_url = UrlLookup(url_hash=url_hash, url=url, user_id=user_id)
 
     db.add(new_url)
     db.commit()

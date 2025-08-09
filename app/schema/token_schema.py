@@ -15,4 +15,4 @@ class TokenData(BaseModel):
     Modelo Pydantic para os dados contidos no token (payload).
     """
 
-    username: str | None = None
+    email: str | None = None

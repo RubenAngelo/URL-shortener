@@ -6,6 +6,7 @@ Este módulo fornece funções auxiliares para o gerenciamento de URLs e hashes.
 
 import hashlib
 from datetime import datetime
+import base64
 
 from fastapi import Request
 from passlib.context import CryptContext
@@ -67,3 +68,7 @@ def verify_password(password: str, hashed_password: str) -> bool:
     Verifica se uma senha em texto puro corresponde a um hash.
     """
     return pwd_context.verify(password, hashed_password)
+
+
+def decode_auth(auth: str) -> str:
+    return base64.b64decode(auth).decode("utf-8").split(":")

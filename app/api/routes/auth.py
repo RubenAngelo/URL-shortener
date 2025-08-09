@@ -8,13 +8,13 @@ from app.core.database_config import get_db
 from app.core.security_config import (
     create_access_token,
     AUTH_ACCESS_TOKEN_EXPIRE_MINUTES,
-    get_current_user,
+    get_api_key,
 )
-from app.CRUD.user_crud import get_user_by_username, create_user
-from app.utils.utils import verify_password
+from app.models.api_key_model import ApiKey
+from app.CRUD.user_crud import get_user_by_email, create_user
+from app.utils.utils import verify_password, decode_auth
 from app.schema.token_schema import Token
 from app.schema.user_schema import UserCreate, UserResponse
-from app.models.user_db_model import User
 from app.core.logging_config import setup_logging
 
 logger = setup_logging("auth")
@@ -30,10 +30,12 @@ async def login_for_access_token(
     Endpoint para login de usuário e obtenção de token de acesso.
     """
 
-    user = get_user_by_username(db=db, username=form_data.username)
+    email, password = decode_auth(form_data.password)
+
+    user = get_user_by_email(db=db, email=email)
 
     if not user or not verify_password(
-        password=form_data.password, hashed_password=user.password
+        password=password, hashed_password=user.password
     ):
 
         raise HTTPException(
@@ -45,7 +47,7 @@ async def login_for_access_token(
     access_token_expires = timedelta(minutes=AUTH_ACCESS_TOKEN_EXPIRE_MINUTES)
 
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": user.email}, expires_delta=access_token_expires
     )
 
     logger.info("Usuário autenticado com sucesso!")
@@ -56,12 +58,14 @@ async def login_for_access_token(
 @router.post(
     "/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED
 )
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+def register_user(
+    user: UserCreate, db: Session = Depends(get_db), _: ApiKey = Depends(get_api_key)
+):
     """
     Endpoint para registro de um novo usuário.
     """
 
-    db_user = get_user_by_username(db, username=user.username)
+    db_user = get_user_by_email(db, email=user.email)
 
     if db_user:
         raise HTTPException(
@@ -71,7 +75,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 
     try:
         new_user = create_user(db=db, user=user)
-        return UserResponse(id=new_user.id, username=new_user.username)
+        return UserResponse(id=new_user.id, email=new_user.email)
 
     except Exception as e:
         db.rollback()

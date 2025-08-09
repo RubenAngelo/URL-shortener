@@ -1,16 +1,11 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
-
+from pydantic import BaseModel
 
 class UserBase(BaseModel):
     """
     Modelo base para um usuário, contendo campos comuns.
     """
 
-    username: str
-    email: Optional[EmailStr] = None
-    disabled: Optional[bool] = None
-
+    email: str
 
 class UserCreate(UserBase):
     """

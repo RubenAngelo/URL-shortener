@@ -9,11 +9,13 @@ no banco de dados e retornar uma URL encurtada para o usuário.
 from fastapi import APIRouter, Request, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.models.user_db_model import User
 from app.core.database_config import get_db
 from app.core.logging_config import setup_logging
 from app.schema.url_shortener_schema import UrlRequest, UrlResponse
 from app.utils.utils import generate_url_hash, build_short_url
 from app.CRUD.url_crud import create_url_mapping, get_url_hash_by_url
+from app.core.security_config import get_current_user
 
 logger = setup_logging("url_shortener")
 
@@ -22,7 +24,10 @@ router = APIRouter()
 
 @router.post("/shorten", response_model=UrlResponse)
 def create_short_url(
-    request: UrlRequest, fastapi_request: Request, db: Session = Depends(get_db)
+    request: UrlRequest,
+    fastapi_request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> UrlResponse:
     """
     Cria uma URL encurtada a partir de uma URL original.
@@ -51,7 +56,7 @@ def create_short_url(
 
     try:
         # Insere a URL e o hash na tabela
-        create_url_mapping(db=db, url=url, url_hash=url_hash)
+        create_url_mapping(db=db, url=url, url_hash=url_hash, user_id=user.id)
 
     except Exception as e:
         db.rollback()

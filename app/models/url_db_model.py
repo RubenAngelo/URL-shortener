@@ -8,3 +8,4 @@ class UrlLookup(base):
 
     url_hash = Column(String(10), primary_key=True, index=True)
     url = Column(Text, nullable=False, unique=True, index=True)
+    user_id = Column(Text, nullable=False)

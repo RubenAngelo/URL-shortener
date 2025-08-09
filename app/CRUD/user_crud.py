@@ -8,14 +8,14 @@ from app.utils.utils import get_password_hash
 logger = setup_logging("user_crud")
 
 
-def get_user_by_username(db: Session, username: str) -> User | None:
+def get_user_by_email(db: Session, email: str) -> User | None:
     """
     Busca um usuário pelo nome de usuário.
     """
 
     logger.info("Autenticando usuário...")
 
-    return db.query(User).filter(User.username == username).first()
+    return db.query(User).filter(User.email == email).first()
 
 
 def get_user_by_id(db: Session, user_id: int) -> User | None:
@@ -35,9 +35,7 @@ def create_user(db: Session, user: UserCreate) -> User:
 
     password = get_password_hash(user.password)
 
-    db_user = User(
-        username=user.username, email=user.email, password=password
-    )
+    db_user = User(email=user.email, password=password)
 
     db.add(db_user)
     db.commit()

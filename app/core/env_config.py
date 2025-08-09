@@ -46,6 +46,8 @@ class Settings(BaseSettings):
     AUTH_ALGORITHM: str = "HS256"
     AUTH_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    ADM_KEY: str
+
     class Config:
         env_file = os.getenv("ENV_FILE", ".env")
 
